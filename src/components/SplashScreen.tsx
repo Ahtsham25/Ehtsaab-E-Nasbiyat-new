@@ -7,21 +7,23 @@ interface SplashScreenProps {
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
   const [progress, setProgress] = useState(0);
+  const onFinishRef = React.useRef(onFinish);
+  onFinishRef.current = onFinish;
 
   useEffect(() => {
     const timer = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(timer);
-          setTimeout(onFinish, 300);
+          setTimeout(() => onFinishRef.current(), 250);
           return 100;
         }
         return prev + 5;
       });
-    }, 50);
+    }, 45);
 
     return () => clearInterval(timer);
-  }, [onFinish]);
+  }, []);
 
   return (
     <div

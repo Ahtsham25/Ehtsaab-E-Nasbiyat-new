@@ -61,12 +61,17 @@ export const InternalReader: React.FC<InternalReaderProps> = ({
   const touchStartY = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Sync last read page
+  // Sync last read page safely without infinite render loop
+  const onUpdateLastPageRef = useRef(onUpdateLastPage);
+  onUpdateLastPageRef.current = onUpdateLastPage;
+
+  const prevReportedPage = useRef<number>(initialPage);
   useEffect(() => {
-    if (onUpdateLastPage) {
-      onUpdateLastPage(volume.id, currentPage);
+    if (currentPage !== prevReportedPage.current) {
+      prevReportedPage.current = currentPage;
+      onUpdateLastPageRef.current?.(volume.id, currentPage);
     }
-  }, [currentPage, volume.id, onUpdateLastPage]);
+  }, [currentPage, volume.id]);
 
   // Keyboard navigation
   useEffect(() => {

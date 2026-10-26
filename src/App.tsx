@@ -99,17 +99,26 @@ export default function App() {
     setTimeout(() => setGlobalToast(null), 3000);
   };
 
+  const handleFinishSplash = React.useCallback(() => {
+    setShowSplash(false);
+  }, []);
+
+  // Update last read page
+  const handleUpdateLastPage = React.useCallback((volId: number, page: number) => {
+    setLastRead({ volumeId: volId, page });
+  }, []);
+
   // Select volume to open in internal reader
-  const handleSelectVolume = (volume: Volume, page: number = 1) => {
+  const handleSelectVolume = React.useCallback((volume: Volume, page: number = 1) => {
     setActiveReadingVolume(volume);
     setActiveReadingPage(page);
     setLastRead({ volumeId: volume.id, page });
-  };
+  }, []);
 
   // Close internal reader
-  const handleCloseReader = () => {
+  const handleCloseReader = React.useCallback(() => {
     setActiveReadingVolume(null);
-  };
+  }, []);
 
   // Download volume
   const handleDownloadVolume = (vol: Volume) => {
@@ -210,7 +219,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#071911] text-slate-100 flex flex-col font-sans selection:bg-amber-600 selection:text-white" dir="rtl">
       {/* ================= SPLASH SCREEN ================= */}
-      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
+      {showSplash && <SplashScreen onFinish={handleFinishSplash} />}
 
       {/* Global Toast Banner */}
       {globalToast && (
@@ -284,10 +293,7 @@ export default function App() {
               b.pageNumber === activeReadingPage
           )}
           onDownload={handleDownloadVolume}
-          onUpdateLastPage={(volId, page) => {
-            setActiveReadingPage(page);
-            setLastRead({ volumeId: volId, page });
-          }}
+          onUpdateLastPage={handleUpdateLastPage}
         />
       )}
 
