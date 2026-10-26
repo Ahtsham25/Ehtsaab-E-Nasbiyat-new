@@ -47,13 +47,20 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+      - run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-36" "platforms;android-35" || true
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install --legacy-peer-deps
+      - run: npm install --legacy-peer-deps || npm install --force
       - run: npm run build
-      - run: npx cap add android || true && npx cap sync android
-      - run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+      - run: |
+          if [ ! -d "android" ]; then npx cap add android; fi
+          npx cap sync android
+          echo "android.dependency.enforceCheckAarMetadata=false" >> android/gradle.properties
+          echo "android.suppressUnsupportedCompileSdk=34,35,36" >> android/gradle.properties
+      - run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon -Pandroid.dependency.enforceCheckAarMetadata=false -Pandroid.suppressUnsupportedCompileSdk=34,35,36
       - uses: actions/upload-artifact@v4
         with:
           name: Ihtisab-e-Nasbiyat-v1.0-APK

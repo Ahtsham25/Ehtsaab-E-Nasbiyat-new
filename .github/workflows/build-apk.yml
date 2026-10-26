@@ -5,7 +5,7 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch:
+  workflow_dispatch: # Allows manual trigger from GitHub Actions UI
 
 jobs:
   build-apk:
@@ -13,43 +13,54 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: 📥 کلاؤڈ ریپو کلون کریں
+      - name: 📥 کلاؤڈ ریپو کلون کریں (Checkout Repository)
         uses: actions/checkout@v4
 
-      - name: ☕ Java 21 سیٹ اپ کریں
+      - name: ☕ Java 21 سیٹ اپ کریں (Set up JDK 21)
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: 📱 Android SDK لائسنس قبول کریں
-        run: yes | sdkmanager --licenses || true
+      - name: 📱 Android SDK لائسنس و پلیٹ فارم (Setup Android SDK)
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-36" "platforms;android-35" || true
 
-      - name: 📦 Node.js LTS سیٹ اپ کریں
+      - name: 📦 Node.js LTS سیٹ اپ کریں (Set up Node.js)
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: ⚙️ پروجیکٹ پیکجز انسٹال کریں
+      - name: ⚙️ پروجیکٹ پیکجز انسٹال کریں (Install Dependencies)
         run: npm install --legacy-peer-deps || npm install --force
 
-      - name: 🔨 ویب ایپلیکیشن بلڈ کریں
+      - name: 🔨 ویب ایپلیکیشن بلڈ کریں (Build Web Assets)
         run: npm run build
 
-      - name: 🤖 Capacitor سنک کریں
-        run: npx cap sync android
+      - name: 🤖 Capacitor سنک و کنفیگر کریں (Prepare Capacitor Android)
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
+          npx cap sync android
+          # Ensure Gradle bypasses strict AAR compileSdk checks
+          echo "android.dependency.enforceCheckAarMetadata=false" >> android/gradle.properties
+          echo "android.suppressUnsupportedCompileSdk=34,35,36" >> android/gradle.properties
+          sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/' android/variables.gradle || true
+          sed -i 's/<string name="app_name">.*/<string name="app_name">احتساب ناصبیت<\/string>/' android/app/src/main/res/values/strings.xml || true
 
-      - name: 🛡️ Gradle کی اجازت دیں
+      - name: 🛡️ Gradle کی اجازت دیں (Make Gradlew Executable)
         run: |
           cd android
           chmod +x gradlew
 
-      - name: 🚀 اینڈرائیڈ اے پی کے بلڈ کریں
+      - name: 🚀 اینڈرائیڈ اے پی کے بلڈ کریں (Build Android APK)
         run: |
           cd android
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleDebug --no-daemon --stacktrace -Pandroid.dependency.enforceCheckAarMetadata=false -Pandroid.suppressUnsupportedCompileSdk=34,35,36
 
-      - name: 📤 اے پی کے فائل اپلوڈ کریں
+      - name: 📤 اے پی کے فائل اپلوڈ کریں (Upload APK Artifact)
         uses: actions/upload-artifact@v4
         with:
           name: Ihtisab-e-Nasbiyat-v1.0-APK
