@@ -5,7 +5,7 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
-  workflow_dispatch: # Allows manual trigger from GitHub Actions UI
+  workflow_dispatch:
 
 jobs:
   build-apk:
@@ -13,42 +13,43 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: 📥 کلاؤڈ ریپو کلون کریں (Checkout Repository)
+      - name: 📥 کلاؤڈ ریپو کلون کریں
         uses: actions/checkout@v4
 
-      - name: ☕ Java 21 سیٹ اپ کریں (Set up JDK 21 for AGP 8.13)
+      - name: ☕ Java 21 سیٹ اپ کریں
         uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: 📦 Node.js LTS سیٹ اپ کریں (Set up Node.js)
+      - name: 📱 Android SDK سیٹ اپ کریں
+        uses: android-actions/setup-android@v3
+
+      - name: 📦 Node.js LTS سیٹ اپ کریں
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: ⚙️ پروجیکٹ پیکجز انسٹال کریں (Install Dependencies)
+      - name: ⚙️ پروجیکٹ پیکجز انسٹال کریں
         run: npm install --legacy-peer-deps || npm install --force
 
-      - name: 🔨 ویب ایپلیکیشن بلڈ کریں (Build Web Assets)
+      - name: 🔨 ویب ایپلیکیشن بلڈ کریں
         run: npm run build
 
-      - name: 🤖 Capacitor Android تیار کریں (Prepare Capacitor Android)
-        run: |
-          npx cap add android || true
-          npx cap sync android
+      - name: 🤖 Capacitor سنک کریں
+        run: npx cap sync android
 
-      - name: 🛡️ Gradle کی اجازت دیں (Make Gradlew Executable)
+      - name: 🛡️ Gradle کی اجازت دیں
         run: |
           cd android
           chmod +x gradlew
 
-      - name: 🚀 اینڈرائیڈ اے پی کے بلڈ کریں (Build Android APK)
+      - name: 🚀 اینڈرائیڈ اے پی کے بلڈ کریں
         run: |
           cd android
           ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: 📤 اے پی کے فائل اپلوڈ کریں (Upload APK Artifact)
+      - name: 📤 اے پی کے فائل اپلوڈ کریں
         uses: actions/upload-artifact@v4
         with:
           name: Ihtisab-e-Nasbiyat-v1.0-APK
