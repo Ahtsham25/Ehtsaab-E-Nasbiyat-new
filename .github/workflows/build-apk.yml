@@ -28,18 +28,14 @@ jobs:
           node-version: '22'
 
       - name: ⚙️ پروجیکٹ پیکجز انسٹال کریں (Install Dependencies)
-        run: |
-          npm install --legacy-peer-deps
-          npm install @capacitor/core @capacitor/cli @capacitor/android --save-dev
+        run: npm install --legacy-peer-deps
 
       - name: 🔨 ویب ایپلیکیشن بلڈ کریں (Build Web Assets)
         run: npm run build
 
-      - name: 🤖 Capacitor Android پروجیکٹ تیار کریں (Prepare Capacitor Android)
+      - name: 🤖 Capacitor Android تیار کریں (Prepare Capacitor Android)
         run: |
-          npx cap init "IhtisabNasbiyat" "com.ihtisab.nasbiyat" --web-dir "dist"
           npx cap add android || true
-          sed -i 's/<string name="app_name">.*/<string name="app_name">احتساب ناصبیت<\/string>/' android/app/src/main/res/values/strings.xml || true
           npx cap sync android
 
       - name: 🛡️ Gradle کی اجازت دیں (Make Gradlew Executable)

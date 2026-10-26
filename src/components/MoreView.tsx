@@ -35,7 +35,7 @@ export const MoreView: React.FC<MoreViewProps> = ({
   const sampleWorkflowCode = `name: Build Android APK (احتساب ناصبیت)
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
@@ -50,8 +50,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install && npm run build
-      - run: npx cap init "احتساب ناصبیت" "com.ihtisab.nasbiyat" --web-dir "dist"
+      - run: npm install --legacy-peer-deps
+      - run: npm run build
       - run: npx cap add android || true && npx cap sync android
       - run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4
