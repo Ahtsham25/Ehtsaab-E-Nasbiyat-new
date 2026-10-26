@@ -1,0 +1,63 @@
+name: Build Android APK (احتساب ناصبیت)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch: # Allows manual trigger from GitHub Actions UI
+
+jobs:
+  build-apk:
+    name: Generate Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 کلاؤڈ ریپو کلون کریں (Checkout Repository)
+        uses: actions/checkout@v4
+
+      - name: ☕ Java 17 سیٹ اپ کریں (Set up JDK 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: 📱 Android SDK سیٹ اپ کریں (Setup Android SDK)
+        uses: android-actions/setup-android@v3
+
+      - name: 📦 Node.js سیٹ اپ کریں (Set up Node.js)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: ⚙️ پروجیکٹ پیکجز انسٹال کریں (Install Dependencies)
+        run: |
+          npm install --legacy-peer-deps
+          npm install @capacitor/core @capacitor/cli @capacitor/android --save-dev
+
+      - name: 🔨 ویب ایپلیکیشن بلڈ کریں (Build Web Assets)
+        run: npm run build
+
+      - name: 🤖 Capacitor Android پروجیکٹ تیار کریں (Prepare Capacitor Android)
+        run: |
+          npx cap init "احتساب ناصبیت" "com.ihtisab.nasbiyat" --web-dir "dist"
+          npx cap add android || true
+          npx cap sync android
+
+      - name: 🛡️ Gradle کی اجازت دیں (Make Gradlew Executable)
+        run: |
+          cd android
+          chmod +x gradlew
+
+      - name: 🚀 اینڈرائیڈ اے پی کے بلڈ کریں (Build Android APK)
+        run: |
+          cd android
+          ./gradlew assembleDebug --stacktrace
+
+      - name: 📤 اے پی کے فائل اپلوڈ کریں (Upload APK Artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ihtisab-e-Nasbiyat-v1.0-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
