@@ -22,8 +22,8 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: 📱 Android SDK سیٹ اپ کریں
-        uses: android-actions/setup-android@v3
+      - name: 📱 Android SDK لائسنس قبول کریں
+        run: yes | sdkmanager --licenses || true
 
       - name: 📦 Node.js LTS سیٹ اپ کریں
         uses: actions/setup-node@v4
