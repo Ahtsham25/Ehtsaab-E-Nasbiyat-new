@@ -1,0 +1,8 @@
+{
+	"appId": "com.ihtisab.nasbiyat",
+	"appName": "IhtisabNasbiyat",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	}
+}
