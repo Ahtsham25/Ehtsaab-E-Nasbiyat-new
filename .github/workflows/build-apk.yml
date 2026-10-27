@@ -22,10 +22,10 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: 📱 Android SDK لائسنس و پلیٹ فارم (Setup Android SDK)
+      - name: 📱 Android SDK سیٹ اپ کریں (Set up Android SDK)
         run: |
           yes | sdkmanager --licenses || true
-          sdkmanager "platforms;android-36" "platforms;android-35" || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" || true
 
       - name: 📦 Node.js LTS سیٹ اپ کریں (Set up Node.js)
         uses: actions/setup-node@v4
@@ -44,11 +44,8 @@ jobs:
             npx cap add android
           fi
           npx cap sync android
-          # Ensure Gradle bypasses strict AAR compileSdk checks
           echo "android.dependency.enforceCheckAarMetadata=false" >> android/gradle.properties
           echo "android.suppressUnsupportedCompileSdk=34,35,36" >> android/gradle.properties
-          sed -i 's/compileSdkVersion = .*/compileSdkVersion = 36/' android/variables.gradle || true
-          sed -i 's/<string name="app_name">.*/<string name="app_name">احتساب ناصبیت<\/string>/' android/app/src/main/res/values/strings.xml || true
 
       - name: 🛡️ Gradle کی اجازت دیں (Make Gradlew Executable)
         run: |
@@ -58,11 +55,11 @@ jobs:
       - name: 🚀 اینڈرائیڈ اے پی کے بلڈ کریں (Build Android APK)
         run: |
           cd android
-          ./gradlew assembleDebug --no-daemon --stacktrace -Pandroid.dependency.enforceCheckAarMetadata=false -Pandroid.suppressUnsupportedCompileSdk=34,35,36
+          ./gradlew assembleDebug --no-daemon --stacktrace -Pandroid.dependency.enforceCheckAarMetadata=false
 
       - name: 📤 اے پی کے فائل اپلوڈ کریں (Upload APK Artifact)
         uses: actions/upload-artifact@v4
         with:
           name: Ihtisab-e-Nasbiyat-v1.0-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/debug/*.apk
           retention-days: 30

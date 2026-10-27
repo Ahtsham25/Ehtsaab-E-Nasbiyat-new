@@ -49,7 +49,7 @@ jobs:
           java-version: '21'
       - run: |
           yes | sdkmanager --licenses || true
-          sdkmanager "platforms;android-36" "platforms;android-35" || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" || true
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -60,11 +60,11 @@ jobs:
           npx cap sync android
           echo "android.dependency.enforceCheckAarMetadata=false" >> android/gradle.properties
           echo "android.suppressUnsupportedCompileSdk=34,35,36" >> android/gradle.properties
-      - run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon -Pandroid.dependency.enforceCheckAarMetadata=false -Pandroid.suppressUnsupportedCompileSdk=34,35,36
+      - run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon -Pandroid.dependency.enforceCheckAarMetadata=false
       - uses: actions/upload-artifact@v4
         with:
           name: Ihtisab-e-Nasbiyat-v1.0-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk`;
+          path: android/app/build/outputs/apk/debug/*.apk`;
 
   const copyWorkflow = () => {
     navigator.clipboard.writeText(sampleWorkflowCode);
