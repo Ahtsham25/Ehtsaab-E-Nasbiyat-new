@@ -20,6 +20,7 @@ export interface Volume {
   isDownloaded?: boolean;
   downloadProgress?: number;
   lastReadPage?: number;
+  hasLocalPdf?: boolean;
   chapters: ChapterTopic[];
 }
 

@@ -216,6 +216,26 @@ export default function App() {
 
   const downloadedCount = volumes.filter((v) => v.isDownloaded).length;
 
+  const handleVolumePdfUpdated = React.useCallback(
+    (volumeId: number, newTotalPages: number, coverImage?: string) => {
+      setVolumes((prev) =>
+        prev.map((v) =>
+          v.id === volumeId
+            ? {
+                ...v,
+                totalPages: newTotalPages,
+                coverImage: coverImage || v.coverImage,
+                hasLocalPdf: true,
+                isDownloaded: true,
+              }
+            : v
+        )
+      );
+      showToast('کتاب کی پی ڈی ایف اور سرورق کامیابی سے اپ ڈیٹ ہو گئے!');
+    },
+    []
+  );
+
   return (
     <div className="min-h-screen bg-[#071911] text-slate-100 flex flex-col font-sans selection:bg-amber-600 selection:text-white" dir="rtl">
       {/* ================= SPLASH SCREEN ================= */}
@@ -294,6 +314,7 @@ export default function App() {
           )}
           onDownload={handleDownloadVolume}
           onUpdateLastPage={handleUpdateLastPage}
+          onVolumePdfUpdated={handleVolumePdfUpdated}
         />
       )}
 

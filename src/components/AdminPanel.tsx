@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import { Volume } from '../types';
 import { fetchArchiveItemInfo, extractArchiveId } from '../utils/archiveHelper';
+import { savePdfToStorage } from '../utils/pdfStorage';
+import { loadPdfDocument, generateFirstPageThumbnail } from '../utils/pdfRenderer';
 
 interface AdminPanelProps {
   volumes: Volume[];
@@ -92,6 +94,38 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       alert('آرکائیو سے ڈیٹا حاصل کرنے میں دشواری پیش آئی۔ لنک کی تصدیق کریں۔');
     } finally {
       setIsFetching(false);
+    }
+  };
+
+  // Upload PDF directly from device
+  const handleDirectPdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsFetching(true);
+    setFetchSuccessMsg(null);
+
+    try {
+      await savePdfToStorage(selectedVolId, file);
+      const doc = await loadPdfDocument(file);
+      const thumb = await generateFirstPageThumbnail(doc);
+      const mb = (file.size / (1024 * 1024)).toFixed(1);
+
+      updateCurrentVolume({
+        totalPages: doc.numPages,
+        coverImage: thumb || currentVolume.coverImage,
+        fileSize: `${mb} MB`,
+        hasLocalPdf: true,
+        isDownloaded: true,
+      });
+
+      setFetchSuccessMsg(`پی ڈی ایف فائل (${file.name}) کامیابی سے منسلک ہو گئی! کل صفحات: ${doc.numPages}`);
+      setTimeout(() => setFetchSuccessMsg(null), 5000);
+    } catch {
+      alert('پی ڈی ایف فائل پڑھنے میں خرابی پیش آئی۔ براہ کرم درست فائل منتخب کریں۔');
+    } finally {
+      setIsFetching(false);
+      e.target.value = '';
     }
   };
 
@@ -369,6 +403,34 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   <span>{fetchSuccessMsg}</span>
                 </div>
               )}
+            </div>
+
+            {/* ================= DIRECT PDF UPLOAD BOX ================= */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-blue-950/40 via-[#0a202d] to-[#081822] border-2 border-blue-500/40 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-blue-500/20 text-blue-400 border border-blue-500/30 shrink-0">
+                  <FileText className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-sm sm:text-base font-bold text-white font-nastaliq">
+                    موبائل یا کمپیوٹر سے اصل پی ڈی ایف (PDF) اپلوڈ کریں
+                  </h4>
+                  <p className="text-xs text-blue-200/70 font-arabic mt-0.5">
+                    فائل منتخب کرنے پر پہلا صفحہ خودکار سرورق بن جائے گا اور کل صفحات کا شمار خودکار اپ ڈیٹ ہو جائے گا۔
+                  </p>
+                </div>
+              </div>
+
+              <label className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm shadow-md transition flex items-center justify-center gap-2 cursor-pointer shrink-0">
+                <Upload className="w-4 h-4" />
+                <span>پی ڈی ایف فائل منتخب کریں</span>
+                <input
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  onChange={handleDirectPdfUpload}
+                  className="hidden"
+                />
+              </label>
             </div>
 
             {/* ================= EDITING FORM ================= */}
